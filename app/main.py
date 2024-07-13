@@ -1,12 +1,13 @@
 from typing import Union
 
 from fastapi import FastAPI
-from app.routers import manage_routers, auth_router, users_router
+from app.routers import manage_routers, auth_router, users_router, category_router
 
 app = FastAPI()
 app.include_router(manage_routers.router)
 app.include_router(auth_router.router)
 app.include_router(users_router.router)
+app.include_router(category_router.router)
 
 
 @app.get("/")
