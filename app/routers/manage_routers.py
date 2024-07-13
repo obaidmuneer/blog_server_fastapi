@@ -19,7 +19,7 @@ def create_fake_data():
                 INSERT INTO users (email, password, is_admin)
                 VALUES (%s, %s, %s)
             """,
-                ("admin@admin.com", hashed_password, True),
+                ("admin@admin.com", hashed_password.decode("utf-8"), True),
             )
             # Create random users
             for _ in range(10):
@@ -29,7 +29,7 @@ def create_fake_data():
                     INSERT INTO users (email, password)
                     VALUES (%s, %s)
                 """,
-                    (email, hashed_password),
+                    (email, hashed_password.decode("utf-8")),
                 )
             # Create random categories
             for _ in range(4):
