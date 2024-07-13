@@ -9,3 +9,7 @@ conninfo = f"dbname={settings.db_name} user={settings.db_user} password={setting
 
 def get_conn():
     return psycopg.connect(conninfo=conninfo)
+
+
+def get_db():
+    yield get_conn()

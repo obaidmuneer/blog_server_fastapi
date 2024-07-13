@@ -1,7 +1,8 @@
-from fastapi import APIRouter, Depends
+from fastapi import APIRouter, Depends, HTTPException
+from psycopg import Connection
 from pydantic import BaseModel, EmailStr
 from app.dependecies import get_id
-from app.db import get_conn
+from app.db import get_db
 from psycopg.rows import class_row
 
 router = APIRouter(prefix="/users")
@@ -13,9 +14,8 @@ class UserDB(BaseModel):
 
 
 @router.get("/me")
-def me(id: str = Depends(get_id)):
-    with get_conn() as conn, conn.cursor(row_factory=class_row(UserDB)) as curr:
-        # hashed_password = bcrypt.hashpw(data.password.encode("utf-8"), bcrypt.gensalt())
+def me(id: str = Depends(get_id), conn: Connection = Depends(get_db)):
+    with conn.cursor(row_factory=class_row(UserDB)) as curr:
 
         record: UserDB = curr.execute(
             "select * from users where id = %s", [id]
