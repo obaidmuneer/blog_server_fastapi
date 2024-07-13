@@ -29,18 +29,21 @@ def is_admin(jwt: Annotated[str | None, Cookie()] = None, conn: DBDep = None):
     print(jwt)
     if not jwt:
         raise HTTPException(status_code=401, detail="not authenticated")
-    payload = pyjwt.decode(jwt, settings.jwt_secret, algorithms="HS256")
-    print(payload)
-    id = payload["sub"]
-    print(id)
-    with conn.cursor() as curr:
-        record = curr.execute(
-            "select is_admin from users where id = %s and is_admin = true", [id]
-        ).fetchone()
-        print(record)
-        if not record:
-            raise HTTPException(status_code=403, detail="unauthorized")
-        return True
+    try:
+        payload = pyjwt.decode(jwt, settings.jwt_secret, algorithms="HS256")
+        print(payload)
+        id = payload["sub"]
+        print(id)
+        with conn.cursor() as curr:
+            record = curr.execute(
+                "select is_admin from users where id = %s and is_admin = true", [id]
+            ).fetchone()
+            print(record)
+            if not record:
+                raise HTTPException(status_code=403, detail="unauthorized")
+    except pyjwt.PyJWTError as e:
+        print(e, "this is error")
+        raise HTTPException(status_code=401, detail="not authenticated")
 
 
 AuthDep = Annotated[str, Depends(get_id)]
