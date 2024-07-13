@@ -1,8 +1,6 @@
-from fastapi import APIRouter, Depends, HTTPException
-from psycopg import Connection
+from fastapi import APIRouter, HTTPException
 from pydantic import BaseModel, EmailStr
-from app.dependecies import get_id
-from app.db import get_db
+from app.dependecies import AuthDep, DBDep
 from psycopg.rows import class_row
 
 router = APIRouter(prefix="/users")
@@ -14,7 +12,7 @@ class UserDB(BaseModel):
 
 
 @router.get("/me")
-def me(id: str = Depends(get_id), conn: Connection = Depends(get_db)):
+def me(id: AuthDep, conn: DBDep):
     with conn.cursor(row_factory=class_row(UserDB)) as curr:
 
         record: UserDB = curr.execute(
@@ -24,4 +22,25 @@ def me(id: str = Depends(get_id), conn: Connection = Depends(get_db)):
         if not record:
             raise HTTPException(status_code=404, detail="user not found")
 
+        return record
+
+
+@router.get("/")
+def all(conn: DBDep):
+    with conn.cursor(row_factory=class_row(UserDB)) as curr:
+
+        record: UserDB = curr.execute(
+            "select * from users where is_admin = true"
+        ).fetchall()
+        print(record)
+        return record
+
+
+@router.get("/{id}")
+def user(id: int, conn: DBDep):
+    with conn.cursor(row_factory=class_row(UserDB)) as curr:
+        record: UserDB = curr.execute(
+            "select * from users where id = %s", [id]
+        ).fetchone()
+        print(record)
         return record
