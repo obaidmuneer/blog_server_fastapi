@@ -88,16 +88,14 @@ def update_category(
 
 @router.delete("/{category_id}")
 def delete_category(category_id: int, conn: DBDep, is_admin: AdminDep):
-    with conn.cursor(row_factory=class_row(CategoryDB)) as curr:
-        existing_record: CategoryDB = curr.execute(
-            "SELECT * FROM categories WHERE id = %s", [category_id]
+    with conn.cursor() as curr:
+        record = curr.execute(
+            "DELETE FROM categories WHERE id = %s RETURNING name", [category_id]
         ).fetchone()
-        print(existing_record)
-        if not existing_record:
-            raise HTTPException(status_code=404, detail="category not found")
 
-        curr.execute("DELETE FROM categories WHERE id = %s", [category_id])
+        if not record:
+            raise HTTPException(status_code=404, detail="category not found")
 
         conn.commit()
         print(category_id)
-        return {"message": "success"}
+        return {"message": f"deleted category {record[0]}"}
