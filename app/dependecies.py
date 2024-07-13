@@ -1,10 +1,12 @@
 from typing import Annotated
 import jwt as pyjwt
+from psycopg import Connection
 from app.config import get_settings
+from app.db import get_db
 
 settings = get_settings()
 
-from fastapi import Cookie, HTTPException
+from fastapi import Cookie, Depends, HTTPException
 
 
 def get_id(jwt: Annotated[str | None, Cookie()] = None):
@@ -18,3 +20,7 @@ def get_id(jwt: Annotated[str | None, Cookie()] = None):
     except Exception as e:
         print(e, "this is error")
         raise HTTPException(status_code=401, detail="Not authenticated")
+
+
+DBDep = Annotated[Connection, Depends(get_db)]
+AuthDep = Annotated[str, Depends(get_id)]
